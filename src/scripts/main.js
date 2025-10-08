@@ -1,3 +1,5 @@
+'use strict';
+
 document.addEventListener('DOMContentLoaded', () => {
   const forms = document.querySelectorAll('form');
 
@@ -15,43 +17,38 @@ document.addEventListener('DOMContentLoaded', () => {
     return first + raw.slice(1);
   };
 
-  forms.forEach((formEl) => {
+  forms.forEach((formEl, formIndex) => {
     const inputs = formEl.querySelectorAll('input[name]');
 
-    inputs.forEach((input) => {
+    inputs.forEach((input, inputIndex) => {
       const inputName = input.name;
 
       if (!inputName) {
         return;
       }
 
-      // 1) гарантуємо наявність id і прив’язку label → input
       if (!input.id) {
-        input.id = inputName;
+        input.id = `${inputName}-${formIndex}-${inputIndex}`;
       }
 
-      // 2) додаємо label у безпосередній батьківський контейнер
       const parentInput = input.parentElement;
 
       if (!parentInput) {
         return;
       }
 
+      // 3️⃣ перевіряємо, чи існує мітка
       let label = parentInput.querySelector(`label[for="${input.id}"]`);
 
       if (!label) {
         label = document.createElement('label');
-        label.className = 'field-label';
+        label.classList.add('field-label');
+        label.htmlFor = input.id;
+        label.textContent = input.name;
+
         parentInput.insertBefore(label, input);
       }
 
-      // 3) використовуємо htmlFor (а не setAttribute)
-      label.htmlFor = input.id;
-
-      // 4) текст мітки — рівно input.name (без капіталізації)
-      label.textContent = input.name;
-
-      // 5) placeholder — тільки якщо його немає, з великої літери
       if (!input.hasAttribute('placeholder')) {
         input.placeholder = toPlaceholder(inputName);
       }
