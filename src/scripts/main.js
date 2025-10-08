@@ -5,45 +5,55 @@ document.addEventListener('DOMContentLoaded', () => {
     return;
   }
 
-  const toLabelText = (rawName) => {
-    if (!rawName) {
+  const toPlaceholder = (raw) => {
+    if (!raw) {
       return '';
     }
 
-    const first = rawName.charAt(0).toUpperCase();
+    const first = raw.charAt(0).toUpperCase();
 
-    return first + rawName.slice(1);
+    return first + raw.slice(1);
   };
 
-  forms.forEach((formElement) => {
-    const inputs = formElement.querySelectorAll('input[name]');
+  forms.forEach((formEl) => {
+    const inputs = formEl.querySelectorAll('input[name]');
 
     inputs.forEach((input) => {
       const inputName = input.name;
-      const id = input.id || inputName;
 
-      const parentInput = input.closest('.field');
+      if (!inputName) {
+        return;
+      }
+
+      // 1) гарантуємо наявність id і прив’язку label → input
+      if (!input.id) {
+        input.id = inputName;
+      }
+
+      // 2) додаємо label у безпосередній батьківський контейнер
+      const parentInput = input.parentElement;
 
       if (!parentInput) {
         return;
       }
 
-      const hasLabel = parentInput.querySelector(`label[for="${id}"]`);
+      let label = parentInput.querySelector(`label[for="${input.id}"]`);
 
-      if (!hasLabel) {
-        const label = document.createElement('label');
-
+      if (!label) {
+        label = document.createElement('label');
         label.className = 'field-label';
-        label.setAttribute('for', id);
-        label.textContent = toLabelText(inputName);
-
         parentInput.insertBefore(label, input);
       }
 
-      const hasPlaceholder = input.hasAttribute('placeholder');
+      // 3) використовуємо htmlFor (а не setAttribute)
+      label.htmlFor = input.id;
 
-      if (!hasPlaceholder) {
-        input.placeholder = toLabelText(inputName);
+      // 4) текст мітки — рівно input.name (без капіталізації)
+      label.textContent = input.name;
+
+      // 5) placeholder — тільки якщо його немає, з великої літери
+      if (!input.hasAttribute('placeholder')) {
+        input.placeholder = toPlaceholder(inputName);
       }
     });
   });
